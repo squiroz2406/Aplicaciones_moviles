@@ -5,5 +5,5 @@ data class App(
     val nombre: String,
     val categoria: String,
     val descripcion: String,
-    var esFavorita: Boolean = false
+    val esFavorita: Boolean = false
 )

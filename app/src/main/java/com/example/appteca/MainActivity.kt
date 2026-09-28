@@ -12,17 +12,23 @@ import androidx.core.widget.addTextChangedListener
 class MainActivity : AppCompatActivity() {
     private lateinit var adapter: AppAdapter
     private var soloFavoritas = false
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("soloFavoritas", soloFavoritas)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        adapter = AppAdapter(Catalogo.apps,
+        soloFavoritas = savedInstanceState?.getBoolean("soloFavoritas", false) ?: false
+
+        adapter = AppAdapter(
             onAppClick = { app ->
                 val intent = Intent(this, DetalleActivity::class.java)
                 intent.putExtra("appId", app.id)
                 startActivity(intent)
             },
             onFavoritoClick = { app ->
-                app.esFavorita = !app.esFavorita
+                Catalogo.toggleFavorita(app.id)
                 aplicarFiltros()
             })
         val rv = findViewById<RecyclerView>(R.id.rvApps)
@@ -41,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         aplicarFiltros()
     }
+
     private fun aplicarFiltros() {
         val q = findViewById<EditText>(R.id.etBuscar).text.toString().trim()
         var lista: List<App> = Catalogo.apps
@@ -48,7 +55,8 @@ class MainActivity : AppCompatActivity() {
             it.nombre.contains(q, true) || it.categoria.contains(q, true)
         }
         if (soloFavoritas) lista = lista.filter { it.esFavorita }
-        adapter.actualizarLista(lista)
+        lista = lista.sortedByDescending { it.esFavorita }   // Desafio opcional
+        adapter.submitList(lista)
         findViewById<Button>(R.id.btnSoloFav).text =
             if (soloFavoritas) "★ Solo favoritas" else "☆ Todas"
     }

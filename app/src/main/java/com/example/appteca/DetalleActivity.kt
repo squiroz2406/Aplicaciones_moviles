@@ -16,9 +16,11 @@ class DetalleActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvDetCategoria).text = app.categoria
         findViewById<TextView>(R.id.tvDetDescripcion).text = app.descripcion
         val btn = findViewById<Button>(R.id.btnFavorito)
-        fun pintar() { btn.text = if (app.esFavorita) "★ Quitar de favoritas"
-        else "☆ Marcar favorita" }
+        fun pintar() {
+            val actual = Catalogo.apps.find { it.id == appId } ?: return
+            btn.text = if (actual.esFavorita) "★ Quitar de favoritas" else "☆ Marcar favorita"
+        }
         pintar()
-        btn.setOnClickListener { app.esFavorita = !app.esFavorita; pintar() }
+        btn.setOnClickListener { Catalogo.toggleFavorita(appId); pintar() }
     }
 }

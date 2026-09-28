@@ -11,4 +11,8 @@ object Catalogo {
         App(7, "Telegram", "Mensajería y alertas", "Tengo bots para mandarme notificaciones"),
         App(8, "Maps", "Mapas", "Me salva cuando quiero conocer lugares nuevos"),
     )
+    fun toggleFavorita(id: Int) {
+        val i = apps.indexOfFirst { it.id == id }
+        if (i >= 0) apps[i] = apps[i].copy(esFavorita = !apps[i].esFavorita)
+    }
 }
