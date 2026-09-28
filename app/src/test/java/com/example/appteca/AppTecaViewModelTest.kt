@@ -5,6 +5,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import androidx.lifecycle.SavedStateHandle
 
 class AppTecaViewModelTest {
 
@@ -17,7 +18,7 @@ class AppTecaViewModelTest {
     fun setUp() {
         // App es inmutable: se resetea reemplazando cada una por una copia
         Catalogo.apps.replaceAll { it.copy(esFavorita = false) }
-        vm = AppTecaViewModel()
+        vm = AppTecaViewModel(SavedStateHandle())
     }
 
     @Test

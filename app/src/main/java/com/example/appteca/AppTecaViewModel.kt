@@ -4,10 +4,15 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
+class AppTecaViewModel(private val state: SavedStateHandle) : ViewModel() {
+    private var query: String
+        get() = state["query"] ?: ""
+        set(valor) { state["query"] = valor }
 
-class AppTecaViewModel : ViewModel() {
-    private var query = ""
-    private var soloFavoritas = false
+    private var soloFavoritas: Boolean
+        get() = state["soloFavoritas"] ?: false
+        set(valor) { state["soloFavoritas"] = valor }
 
     private val _listaVisible = MutableLiveData<List<App>>()
     val listaVisible: LiveData<List<App>> = _listaVisible
