@@ -45,4 +45,9 @@ class MainActivity : AppCompatActivity() {
                 if (activo) "★ Solo favoritas" else "☆ Todas"
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        vm.refrescar()
+    }
 }

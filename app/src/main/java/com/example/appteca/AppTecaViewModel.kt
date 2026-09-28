@@ -49,4 +49,6 @@ class AppTecaViewModel : ViewModel() {
     override fun onCleared() {
         Log.d("VIDA", "ViewModel → onCleared (destruido de verdad)")
     }
+
+    fun refrescar() = aplicarFiltros()
 }
