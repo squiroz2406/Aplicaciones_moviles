@@ -7,7 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 class AppAdapter(
     private var items: List<App>,
-    private val onAppClick: (App) -> Unit
+    private val onAppClick: (App) -> Unit,
+    private val onFavoritoClick: (App) -> Unit
 ) : RecyclerView.Adapter<AppAdapter.AppViewHolder>() {
     // El ViewHolder: "sostiene" las vistas de UNA fila ya encontradas,
     // para no buscarlas (findViewById) en cada scroll.
@@ -28,9 +29,16 @@ class AppAdapter(
         val app = items[position]
         holder.tvNombre.text = app.nombre
         holder.tvCategoria.text = app.categoria
-        holder.tvEstrella.text = if (app.esFavorita) " " else "☆"
-        holder.itemView.setOnClickListener { onAppClick(app) }
+        holder.tvEstrella.text = if (app.esFavorita) "★" else "☆"
+        holder.itemView.setOnClickListener { onAppClick(app)}
+        holder.tvEstrella.setOnClickListener { onFavoritoClick(app) }
     }
     // Pregunta 1: ¿cuántos hay?
     override fun getItemCount() = items.size
+
+    //actualizo la lista de apps
+    fun actualizarLista(nueva: List<App>) {
+        items = nueva
+        notifyDataSetChanged()
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.appteca
 
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -14,5 +15,10 @@ class DetalleActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvDetNombre).text = app.nombre
         findViewById<TextView>(R.id.tvDetCategoria).text = app.categoria
         findViewById<TextView>(R.id.tvDetDescripcion).text = app.descripcion
+        val btn = findViewById<Button>(R.id.btnFavorito)
+        fun pintar() { btn.text = if (app.esFavorita) "★ Quitar de favoritas"
+        else "☆ Marcar favorita" }
+        pintar()
+        btn.setOnClickListener { app.esFavorita = !app.esFavorita; pintar() }
     }
 }
