@@ -4,12 +4,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.widget.addTextChangedListener
+import android.util.Log
+
 
 class MainActivity : AppCompatActivity() {
+    private val vm: AppTecaViewModel by viewModels()
     private lateinit var adapter: AppAdapter
     private var soloFavoritas = false
     override fun onSaveInstanceState(outState: Bundle) {
@@ -18,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("VIDA", "Main → onCreate (vm=${vm.hashCode()})")
         setContentView(R.layout.activity_main)
         soloFavoritas = savedInstanceState?.getBoolean("soloFavoritas", false) ?: false
 
@@ -59,5 +64,10 @@ class MainActivity : AppCompatActivity() {
         adapter.submitList(lista)
         findViewById<Button>(R.id.btnSoloFav).text =
             if (soloFavoritas) "★ Solo favoritas" else "☆ Todas"
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("VIDA", "Main → onDestroy")
     }
 }
