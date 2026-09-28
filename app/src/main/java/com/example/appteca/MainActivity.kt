@@ -6,25 +6,17 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.core.widget.addTextChangedListener
-import android.util.Log
-
 
 class MainActivity : AppCompatActivity() {
     private val vm: AppTecaViewModel by viewModels()
     private lateinit var adapter: AppAdapter
-    private var soloFavoritas = false
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean("soloFavoritas", soloFavoritas)
-    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("VIDA", "Main → onCreate (vm=${vm.hashCode()})")
         setContentView(R.layout.activity_main)
-        soloFavoritas = savedInstanceState?.getBoolean("soloFavoritas", false) ?: false
 
         adapter = AppAdapter(
             onAppClick = { app ->
@@ -32,42 +24,25 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("appId", app.id)
                 startActivity(intent)
             },
-            onFavoritoClick = { app ->
-                Catalogo.toggleFavorita(app.id)
-                aplicarFiltros()
-            })
+            onFavoritoClick = { app -> vm.alternarFavorita(app) })
+
         val rv = findViewById<RecyclerView>(R.id.rvApps)
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = adapter
-        findViewById<EditText>(R.id.etBuscar).addTextChangedListener {
-            aplicarFiltros()
+
+        findViewById<EditText>(R.id.etBuscar).addTextChangedListener { texto ->
+            vm.buscar(texto.toString())
         }
         findViewById<Button>(R.id.btnSoloFav).setOnClickListener {
-            soloFavoritas = !soloFavoritas
-            aplicarFiltros()
+            vm.alternarModo()
         }
-        aplicarFiltros()
-    }
-    override fun onResume() {
-        super.onResume()
-        aplicarFiltros()
-    }
 
-    private fun aplicarFiltros() {
-        val q = findViewById<EditText>(R.id.etBuscar).text.toString().trim()
-        var lista: List<App> = Catalogo.apps
-        if (q.isNotEmpty()) lista = lista.filter {
-            it.nombre.contains(q, true) || it.categoria.contains(q, true)
+        vm.listaVisible.observe(this) { lista ->
+            adapter.submitList(lista)
         }
-        if (soloFavoritas) lista = lista.filter { it.esFavorita }
-        lista = lista.sortedByDescending { it.esFavorita }   // Desafio opcional
-        adapter.submitList(lista)
-        findViewById<Button>(R.id.btnSoloFav).text =
-            if (soloFavoritas) "★ Solo favoritas" else "☆ Todas"
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("VIDA", "Main → onDestroy")
+        vm.modoSoloFavoritas.observe(this) { activo ->
+            findViewById<Button>(R.id.btnSoloFav).text =
+                if (activo) "★ Solo favoritas" else "☆ Todas"
+        }
     }
 }
