@@ -23,9 +23,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -55,7 +52,7 @@ fun PantallaAppTeca(vm: AppTecaViewModel = viewModel()) {
     val lista by vm.listaVisible.collectAsStateWithLifecycle()
     val modoFav by vm.modoSoloFavoritas.collectAsStateWithLifecycle()
     val seleccionada by vm.appSeleccionada.collectAsStateWithLifecycle()
-    var textoBusqueda by rememberSaveable { mutableStateOf("") }
+    val textoBusqueda by vm.textoBusqueda.collectAsStateWithLifecycle()
     val app = seleccionada
     if (app != null) {
         DetalleApp(
@@ -67,9 +64,7 @@ fun PantallaAppTeca(vm: AppTecaViewModel = viewModel()) {
         Column(modifier = Modifier.fillMaxSize()) {
             OutlinedTextField(
                 value = textoBusqueda,
-                onValueChange = { nuevo ->
-                    textoBusqueda = nuevo
-                    vm.buscar(nuevo)
+                onValueChange = { nuevo -> vm.buscar(nuevo)
                 },
                 label = { Text("Buscar por nombre o categoría") },
                 modifier = Modifier
@@ -115,10 +110,11 @@ fun DetalleApp(app: App, onFavoritoClick: () -> Unit, onVolver: () -> Unit) {
 fun FilaApp(
     app: App,
     onClick: () -> Unit,
-    onFavoritoClick: () -> Unit
+    onFavoritoClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(16.dp),
@@ -149,7 +145,8 @@ fun ListaApps(
             FilaApp(
                 app = app,
                 onClick = { onAppClick(app) },
-                onFavoritoClick = { onFavoritoClick(app) }
+                onFavoritoClick = { onFavoritoClick(app) },
+                modifier = Modifier.animateItem()
             )
         }
     }
