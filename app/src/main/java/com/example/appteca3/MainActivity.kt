@@ -2,7 +2,6 @@ package com.example.appteca3
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
@@ -29,6 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.appteca3.ui.theme.AppTeca3Theme
 
 class MainActivity : ComponentActivity() {
@@ -39,57 +43,76 @@ class MainActivity : ComponentActivity() {
             AppTeca3Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        PantallaAppTeca()
+                        AppTecaNav()
                     }
                 }
             }
         }
     }
 }
-
 @Composable
-fun PantallaAppTeca(vm: AppTecaViewModel = viewModel()) {
-    val lista by vm.listaVisible.collectAsStateWithLifecycle()
-    val modoFav by vm.modoSoloFavoritas.collectAsStateWithLifecycle()
-    val seleccionada by vm.appSeleccionada.collectAsStateWithLifecycle()
-    val textoBusqueda by vm.textoBusqueda.collectAsStateWithLifecycle()
-    val app = seleccionada
-    if (app != null) {
-        DetalleApp(
-            app = app,
-            onFavoritoClick = { vm.alternarFavorita(app) },
-            onVolver = { vm.volverALista() }
-        )
-    } else {
-        Column(modifier = Modifier.fillMaxSize()) {
-            OutlinedTextField(
-                value = textoBusqueda,
-                onValueChange = { nuevo -> vm.buscar(nuevo)
-                },
-                label = { Text("Buscar por nombre o categoría") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+fun AppTecaNav() {
+    val navController = rememberNavController()
+    val vm: AppTecaViewModel = viewModel()
+
+    NavHost(navController = navController, startDestination = "lista") {
+
+        composable("lista") {
+            PantallaLista(
+                vm = vm,
+                onAppClick = { app -> navController.navigate("detalle/${app.id}") }
             )
-            Button(
-                onClick = { vm.alternarModo() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(if (modoFav) "★ Solo favoritas" else "☆ Todas")
-            }
-            ListaApps(
-                apps = lista,
-                onAppClick = { app -> vm.seleccionar(app) },
-                onFavoritoClick = { app -> vm.alternarFavorita(app) }
-            )
+        }
+
+        composable(
+            route = "detalle/{appId}",
+            arguments = listOf(navArgument("appId") { type = NavType.IntType })
+        ) { entrada ->
+            val appId = entrada.arguments?.getInt("appId") ?: return@composable
+            PantallaDetalle(vm = vm, appId = appId)
         }
     }
 }
 @Composable
-fun DetalleApp(app: App, onFavoritoClick: () -> Unit, onVolver: () -> Unit) {
-    BackHandler { onVolver() }
+fun PantallaLista(vm: AppTecaViewModel, onAppClick: (App) -> Unit) {
+    val lista by vm.listaVisible.collectAsStateWithLifecycle()
+    val modoFav by vm.modoSoloFavoritas.collectAsStateWithLifecycle()
+    val textoBusqueda by vm.textoBusqueda.collectAsStateWithLifecycle()
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        OutlinedTextField(
+            value = textoBusqueda,
+            onValueChange = { nuevo -> vm.buscar(nuevo) },
+            label = { Text("Buscar por nombre o categoría…") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+        Button(
+            onClick = { vm.alternarModo() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(if (modoFav) "★ Solo favoritas" else "☆ Todas")
+        }
+        ListaApps(
+            apps = lista,
+            onAppClick = onAppClick,
+            onFavoritoClick = { app -> vm.alternarFavorita(app) }
+        )
+    }
+}
+@Composable
+fun PantallaDetalle(vm: AppTecaViewModel, appId: Int) {
+    val todas by vm.todas.collectAsStateWithLifecycle()
+    val app = todas.find { it.id == appId }
+    if (app != null) {
+        DetalleApp(app = app, onFavoritoClick = { vm.alternarFavorita(app) })
+    }
+}
+@Composable
+fun DetalleApp(app: App, onFavoritoClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -11,8 +11,8 @@ class AppTecaViewModel(private val state: SavedStateHandle) : ViewModel() {
     val modoSoloFavoritas: StateFlow<Boolean> = state.getStateFlow("soloFavoritas", false)
     private val _listaVisible = MutableStateFlow<List<App>>(emptyList())
     val listaVisible: StateFlow<List<App>> = _listaVisible
-    private val _appSeleccionada = MutableStateFlow<App?>(null)
-    val appSeleccionada: StateFlow<App?> = _appSeleccionada
+    private val _todas = MutableStateFlow<List<App>>(emptyList())
+    val todas: StateFlow<List<App>> = _todas
 
     init {
         Log.d("VIDA", "ViewModel → creado (${hashCode()}) " +
@@ -35,9 +35,6 @@ class AppTecaViewModel(private val state: SavedStateHandle) : ViewModel() {
         aplicarFiltros()
     }
 
-    fun seleccionar(app: App) { _appSeleccionada.value = app }
-    fun volverALista() { _appSeleccionada.value = null }
-
     private fun aplicarFiltros() {
         val query = textoBusqueda.value.trim()
         var lista: List<App> = Catalogo.apps.toList()
@@ -47,10 +44,7 @@ class AppTecaViewModel(private val state: SavedStateHandle) : ViewModel() {
         }
         if (modoSoloFavoritas.value) lista = lista.filter { it.esFavorita }
         _listaVisible.value = lista
-
-        _appSeleccionada.value = _appSeleccionada.value?.let { sel ->
-            Catalogo.apps.find { it.id == sel.id }
-        }
+        _todas.value = Catalogo.apps.toList()      // NUEVO
     }
 
     override fun onCleared() {
