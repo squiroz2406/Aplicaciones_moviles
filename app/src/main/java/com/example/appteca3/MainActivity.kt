@@ -2,14 +2,17 @@ package com.example.appteca3
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -51,33 +54,60 @@ class MainActivity : ComponentActivity() {
 fun PantallaAppTeca(vm: AppTecaViewModel = viewModel()) {
     val lista by vm.listaVisible.collectAsStateWithLifecycle()
     val modoFav by vm.modoSoloFavoritas.collectAsStateWithLifecycle()
+    val seleccionada by vm.appSeleccionada.collectAsStateWithLifecycle()
     var textoBusqueda by rememberSaveable { mutableStateOf("") }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = textoBusqueda,
-            onValueChange = { nuevo ->
-                textoBusqueda = nuevo
-                vm.buscar(nuevo)
-            },
-            label = { Text("Buscar por nombre o categoría…") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+    val app = seleccionada
+    if (app != null) {
+        DetalleApp(
+            app = app,
+            onFavoritoClick = { vm.alternarFavorita(app) },
+            onVolver = { vm.volverALista() }
         )
-        Button(
-            onClick = { vm.alternarModo() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(if (modoFav) "★ Solo favoritas" else "☆ Todas")
+    } else {
+        Column(modifier = Modifier.fillMaxSize()) {
+            OutlinedTextField(
+                value = textoBusqueda,
+                onValueChange = { nuevo ->
+                    textoBusqueda = nuevo
+                    vm.buscar(nuevo)
+                },
+                label = { Text("Buscar por nombre o categoría") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+            Button(
+                onClick = { vm.alternarModo() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(if (modoFav) "★ Solo favoritas" else "☆ Todas")
+            }
+            ListaApps(
+                apps = lista,
+                onAppClick = { app -> vm.seleccionar(app) },
+                onFavoritoClick = { app -> vm.alternarFavorita(app) }
+            )
         }
-        ListaApps(
-            apps = lista,
-            onAppClick = { /* Etapa 4 */ },
-            onFavoritoClick = { app -> vm.alternarFavorita(app) }
-        )
+    }
+}
+@Composable
+fun DetalleApp(app: App, onFavoritoClick: () -> Unit, onVolver: () -> Unit) {
+    BackHandler { onVolver() }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+    ) {
+        Text(app.nombre, style = MaterialTheme.typography.headlineLarge)
+        Text(app.categoria, style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.height(16.dp))
+        Text(app.descripcion, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(24.dp))
+        Button(onClick = onFavoritoClick) {
+            Text(if (app.esFavorita) "★ Quitar de favoritas" else "☆ Marcar favorita")
+        }
     }
 }
 
